@@ -1,3 +1,4 @@
+<?php
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -19,25 +20,11 @@
  * The licensing of the program under the AGPLv3 does not imply a
  * trademark license. Therefore any rights, title and interest in
  * our trademarks remain entirely with us.
- *
- * @category    Shopware
- * @package     Base
- * @subpackage  Attribute
- * @version     $Id$
- * @author      shopware AG
  */
-
-Ext.define('Shopware.attribute.HtmlFieldHandler', {
-    extend: 'Shopware.attribute.FieldHandlerInterface',
-
-    supports: function(attribute) {
-        return (attribute.get('columnType') === 'html');
-    },
-
-    create: function(field, attribute) {
-        field.xtype = 'tinymce';
-        field.height = 150;
-
-        return field;
+class Migrations_Migration1444 extends Shopware\Components\Migrations\AbstractMigration
+{
+    public function up($modus)
+    {
+        $this->addSql('ALTER TABLE `s_attribute_configuration` ADD `readonly` int(1) NOT NULL;');
     }
-});
+}

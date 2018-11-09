@@ -63,11 +63,6 @@ Ext.define('Shopware.form.field.Grid', {
     /**
      * @boolean
      */
-    allowSorting: true,
-
-    /**
-     * @boolean
-     */
     animateAddItem: true,
 
     useSeparator: true,
@@ -81,9 +76,15 @@ Ext.define('Shopware.form.field.Grid', {
 
     allowAdd: true,
 
+    /**
+     * @boolean
+     */
+    allowSorting: true,
+
     initComponent: function() {
         var me = this;
 
+        me.setReadOnlyProperties();
         me.store = me.initializeStore();
         me.items = me.createItems();
 
@@ -92,6 +93,24 @@ Ext.define('Shopware.form.field.Grid', {
         }
 
         me.callParent(arguments);
+    },
+
+    setReadOnlyProperties: function () {
+        var me = this;
+        me.allowSorting = !me.readOnly;
+        me.allowDelete = !me.readOnly;
+        me.allowAdd = !me.readOnly;
+    },
+
+    setReadOnly: function(readOnly) {
+        var me = this;
+        me.readOnly = readOnly;
+
+        me.setReadOnlyProperties();
+
+        var columns = me.grid.columns;
+        me.grid.columns[0].setHidden(readOnly);
+        me.grid.columns[columns.length - 1].down('[cls=sprite-minus-circle-frame]').hidden = readOnly;
     },
 
     initializeStore: function() {
@@ -175,6 +194,7 @@ Ext.define('Shopware.form.field.Grid', {
         }
 
         return {
+            hidden: me.readOnly,
             width: 24,
             hideable: false,
             renderer : me.renderSorthandleColumn
@@ -193,9 +213,7 @@ Ext.define('Shopware.form.field.Grid', {
     createActionColumnItems: function() {
         var items = [];
 
-        if (this.allowDelete) {
-            items.push(this.createDeleteColumn());
-        }
+        items.push(this.createDeleteColumn());
 
         return items;
     },
@@ -204,6 +222,7 @@ Ext.define('Shopware.form.field.Grid', {
         var me = this;
         return {
             action: 'delete',
+            hidden: me.allowDelete,
             iconCls: 'sprite-minus-circle-frame',
             handler: function (view, rowIndex, colIndex, item, opts, record) {
                 me.removeItem(record);
@@ -269,6 +288,8 @@ Ext.define('Shopware.form.field.Grid', {
         }
 
         return {
+            disabled: me.disabled,
+            readOnly: me.readOnly,
             emptyText: emptyText,
             helpText: me.helpText,
             helpTitle: me.helpTitle,

@@ -64,6 +64,11 @@ class ConfigurationStruct implements \JsonSerializable
     /**
      * @var bool
      */
+    private $readonly = false;
+
+    /**
+     * @var bool
+     */
     private $custom = false;
 
     /**
@@ -225,6 +230,22 @@ class ConfigurationStruct implements \JsonSerializable
     public function setDisplayInBackend($displayInBackend)
     {
         $this->displayInBackend = $displayInBackend;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isReadonly()
+    {
+        return $this->readonly;
+    }
+
+    /**
+     * @param bool $readonly
+     */
+    public function setReadonly($readonly)
+    {
+        $this->readonly = $readonly;
     }
 
     /**

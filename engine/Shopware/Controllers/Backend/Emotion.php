@@ -30,6 +30,7 @@ use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Random;
 use Shopware\Models\Emotion\Element;
 use Shopware\Models\Emotion\Emotion;
+use Shopware\Models\Emotion\Library\Component;
 use Shopware\Models\Emotion\Library\Field;
 use Shopware\Models\Shop\Shop;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -446,12 +447,21 @@ class Shopware_Controllers_Backend_Emotion extends Shopware_Controllers_Backend_
     {
         $builder = Shopware()->Models()->createQueryBuilder();
         $builder->select(['components', 'fields'])
-            ->from(\Shopware\Models\Emotion\Library\Component::class, 'components')
+            ->from(Component::class, 'components')
             ->leftJoin('components.fields', 'fields')
             ->orderBy('components.id', 'ASC')
             ->addOrderBy('fields.position', 'ASC');
 
         $components = $builder->getQuery()->getArrayResult();
+
+        $snippets = $this->get('snippets')->getNamespace('backend/emotion/view/detail');
+        foreach ($components as &$component) {
+            $name = str_replace(' ', '_', strtolower($component['name']));
+
+            $component['fieldLabel'] = $snippets->get($name, $component['name']);
+        }
+        unset($component); // to make shyim happy and prevent potential issues (scoped anyway)
+
         $this->View()->assign([
             'success' => true,
             'data' => $components,
@@ -1257,8 +1267,8 @@ class Shopware_Controllers_Backend_Emotion extends Shopware_Controllers_Backend_
     {
         foreach ($emotionElements as &$item) {
             if (!empty($item['componentId'])) {
-                /** @var \Shopware\Models\Emotion\Library\Component|null $component */
-                $component = Shopware()->Models()->find(\Shopware\Models\Emotion\Library\Component::class, $item['componentId']);
+                /** @var Component|null $component */
+                $component = Shopware()->Models()->find(Component::class, $item['componentId']);
 
                 if ($component !== null) {
                     $item['component'] = $component;

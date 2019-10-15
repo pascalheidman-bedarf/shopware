@@ -25,63 +25,20 @@
 namespace Shopware\Tests\Api;
 
 use PHPUnit\Framework\TestCase;
-use Zend_Http_Client;
-use Zend_Http_Client_Adapter_Curl;
+use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Http_Client_Exception;
 use Zend_Json;
 use Zend_Json_Exception;
 
 class ArticleTest extends TestCase
 {
-    public $apiBaseUrl = '';
-
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $helper = Shopware();
-
-        $shop = $helper->Shop();
-        $hostname = $shop->getHost();
-        if (empty($hostname)) {
-            static::markTestSkipped(
-                'Hostname is not available.'
-            );
-        }
-
-        $protocol = $shop->getSecure() ? 'https://' : 'http://';
-
-        $this->apiBaseUrl = $protocol . $hostname . $helper->Shop()->getBasePath() . '/api';
-        Shopware()->Db()->query('UPDATE s_core_auth SET apiKey = ? WHERE username LIKE "demo"', [sha1('demo')]);
-    }
-
-    public function getHttpClient()
-    {
-        $username = 'demo';
-        $password = sha1('demo');
-
-        $adapter = new Zend_Http_Client_Adapter_Curl();
-        $adapter->setConfig([
-            'curloptions' => [
-                CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
-                CURLOPT_USERPWD => "$username:$password",
-            ],
-        ]);
-
-        $client = new Zend_Http_Client();
-        $client->setAdapter($adapter);
-
-        return $client;
-    }
+    use ApiSetupTrait;
 
     public function testRequestWithoutAuthenticationShouldReturnError()
     {
-        $client = new Zend_Http_Client($this->apiBaseUrl . '/articles/');
-        $response = $client->request('GET');
+        $response = $this->getHttpClient(false)
+            ->setUri($this->apiBaseUrl . '/articles/')
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(null, $response->getHeader('Set-Cookie'));
@@ -143,13 +100,13 @@ class ArticleTest extends TestCase
                 [
                     'value' => 'testWert',
                     'option' => [
-                        'name' => 'neueOption' . uniqid(rand()),
+                        'name' => 'neueOption' . uniqid(mt_rand(), true),
                     ],
                 ],
             ],
 
             'mainDetail' => [
-                'number' => 'swTEST' . uniqid(rand()),
+                'number' => 'swTEST' . uniqid(mt_rand(), true),
                 'inStock' => 15,
                 'unitId' => 1,
 
@@ -204,7 +161,7 @@ class ArticleTest extends TestCase
 
             'variants' => [
                 [
-                    'number' => 'swTEST.variant.' . uniqid(rand()),
+                    'number' => 'swTEST.variant.' . uniqid(mt_rand(), true),
                     'inStock' => 17,
                     // create a new unit
                     'unit' => [
@@ -247,7 +204,7 @@ class ArticleTest extends TestCase
                     ],
                 ],
                 [
-                    'number' => 'swTEST.variant.' . uniqid(rand()),
+                    'number' => 'swTEST.variant.' . uniqid(mt_rand(), true),
                     'inStock' => 17,
                     // create a new unit
                     'unit' => [
@@ -770,13 +727,13 @@ class ArticleTest extends TestCase
                   [
                       'value' => 'testWert',
                       'option' => [
-                          'name' => 'neueOption' . uniqid(rand()),
+                          'name' => 'neueOption' . uniqid(mt_rand(), true),
                       ],
                   ],
               ],
 
               'mainDetail' => [
-                  'number' => 'swTEST' . uniqid(rand()),
+                  'number' => 'swTEST' . uniqid(mt_rand(), true),
                   'inStock' => 15,
                   'unitId' => 1,
 

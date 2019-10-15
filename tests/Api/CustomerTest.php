@@ -27,65 +27,18 @@ namespace Shopware\Tests\Api;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 use Shopware\Models\Customer\Customer;
-use Zend_Http_Client;
-use Zend_Http_Client_Adapter_Curl;
-use Zend_Http_Client_Adapter_Exception;
+use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
 class CustomerTest extends TestCase
 {
-    public $apiBaseUrl = '';
-
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $helper = Shopware();
-
-        $hostname = $helper->Shop()->getHost();
-        if (empty($hostname)) {
-            static::markTestSkipped(
-                'Hostname is not available.'
-            );
-        }
-
-        $this->apiBaseUrl = 'http://' . $hostname . $helper->Shop()->getBasePath() . '/api';
-
-        Shopware()->Db()->query('UPDATE s_core_auth SET apiKey = ? WHERE username LIKE "demo"', [sha1('demo')]);
-    }
-
-    /**
-     * @throws Zend_Http_Client_Adapter_Exception
-     *
-     * @return Zend_Http_Client
-     */
-    public function getHttpClient()
-    {
-        $username = 'demo';
-        $password = sha1('demo');
-
-        $adapter = new Zend_Http_Client_Adapter_Curl();
-        $adapter->setConfig([
-            'curloptions' => [
-                CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
-                CURLOPT_USERPWD => "$username:$password",
-            ],
-        ]);
-
-        $client = new Zend_Http_Client();
-        $client->setAdapter($adapter);
-
-        return $client;
-    }
+    use ApiSetupTrait;
 
     public function testRequestWithoutAuthenticationShouldReturnError()
     {
-        $client = new Zend_Http_Client($this->apiBaseUrl . '/customers/');
-        $response = $client->request('GET');
+        $response = $this->getHttpClient(false)
+            ->setUri($this->apiBaseUrl . '/customers/')
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(401, $response->getStatus());
@@ -104,8 +57,8 @@ class CustomerTest extends TestCase
     {
         $id = 99999999;
         $response = $this->getHttpClient()
-                         ->setUri($this->apiBaseUrl . '/customers/' . $id)
-                         ->request('GET');
+            ->setUri($this->apiBaseUrl . '/customers/' . $id)
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(404, $response->getStatus());
@@ -126,12 +79,12 @@ class CustomerTest extends TestCase
 
         $date = new DateTime();
         $date->modify('-10 days');
-        $firstlogin = $date->format(DateTime::ISO8601);
+        $firstlogin = $date->format(DateTime::ATOM);
 
         $date->modify('+2 day');
-        $lastlogin = $date->format(DateTime::ISO8601);
+        $lastlogin = $date->format(DateTime::ATOM);
 
-        $birthday = DateTime::createFromFormat('Y-m-d', '1986-12-20')->format(DateTime::ISO8601);
+        $birthday = DateTime::createFromFormat('Y-m-d', '1986-12-20')->format(DateTime::ATOM);
 
         $requestData = [
             'password' => 'fooobar',
@@ -208,12 +161,12 @@ class CustomerTest extends TestCase
 
         $date = new DateTime();
         $date->modify('-10 days');
-        $firstlogin = $date->format(DateTime::ISO8601);
+        $firstlogin = $date->format(DateTime::ATOM);
 
         $date->modify('+2 day');
-        $lastlogin = $date->format(DateTime::ISO8601);
+        $lastlogin = $date->format(DateTime::ATOM);
 
-        $birthday = DateTime::createFromFormat('Y-m-d', '1986-12-20')->format(DateTime::ISO8601);
+        $birthday = DateTime::createFromFormat('Y-m-d', '1986-12-20')->format(DateTime::ATOM);
 
         $requestData = [
             'password' => 'fooobar',
@@ -298,12 +251,12 @@ class CustomerTest extends TestCase
 
         $date = new DateTime();
         $date->modify('-10 days');
-        $firstlogin = $date->format(DateTime::ISO8601);
+        $firstlogin = $date->format(DateTime::ATOM);
 
         $date->modify('+2 day');
-        $lastlogin = $date->format(DateTime::ISO8601);
+        $lastlogin = $date->format(DateTime::ATOM);
 
-        $birthday = DateTime::createFromFormat('Y-m-d', '1986-12-20')->format(DateTime::ISO8601);
+        $birthday = DateTime::createFromFormat('Y-m-d', '1986-12-20')->format(DateTime::ATOM);
 
         $requestData = [
             'password' => 'fooobar',
@@ -416,8 +369,8 @@ class CustomerTest extends TestCase
     public function testGetCustomersWithIdShouldBeSuccessful($id)
     {
         $response = $this->getHttpClient()
-                         ->setUri($this->apiBaseUrl . '/customers/' . $id)
-                         ->request('GET');
+            ->setUri($this->apiBaseUrl . '/customers/' . $id)
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(200, $response->getStatus());

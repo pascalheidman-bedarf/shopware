@@ -25,62 +25,18 @@
 namespace Shopware\Tests\Api;
 
 use PHPUnit\Framework\TestCase;
-use Zend_Http_Client;
-use Zend_Http_Client_Adapter_Curl;
+use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
 class CategoryTest extends TestCase
 {
-    public $apiBaseUrl = '';
-
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $helper = Shopware();
-
-        $hostname = $helper->Shop()->getHost();
-        if (empty($hostname)) {
-            static::markTestSkipped(
-                'Hostname is not available.'
-            );
-        }
-
-        $this->apiBaseUrl = 'http://' . $hostname . $helper->Shop()->getBasePath() . '/api';
-
-        Shopware()->Db()->query('UPDATE s_core_auth SET apiKey = ? WHERE username LIKE "demo"', [sha1('demo')]);
-    }
-
-    /**
-     * @return Zend_Http_Client
-     */
-    public function getHttpClient()
-    {
-        $username = 'demo';
-        $password = sha1('demo');
-
-        $adapter = new Zend_Http_Client_Adapter_Curl();
-        $adapter->setConfig([
-            'curloptions' => [
-                CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
-                CURLOPT_USERPWD => "$username:$password",
-            ],
-        ]);
-
-        $client = new Zend_Http_Client();
-        $client->setAdapter($adapter);
-
-        return $client;
-    }
+    use ApiSetupTrait;
 
     public function testRequestWithoutAuthenticationShouldReturnError()
     {
-        $client = new Zend_Http_Client($this->apiBaseUrl . '/categories');
-        $response = $client->request('GET');
+        $response = $this->getHttpClient(false)
+            ->setUri($this->apiBaseUrl . '/categories')
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(null, $response->getHeader('Set-Cookie'));

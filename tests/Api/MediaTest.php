@@ -25,68 +25,22 @@
 namespace Shopware\Tests\Api;
 
 use PHPUnit\Framework\TestCase;
-use Zend_Http_Client;
-use Zend_Http_Client_Adapter_Curl;
-use Zend_Http_Client_Adapter_Exception;
+use Shopware\Components\Api\Resource\Media;
+use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
 class MediaTest extends TestCase
 {
+    use ApiSetupTrait;
+
     const UPLOAD_FILE_NAME = 'test-bild';
     const UPLOAD_OVERWRITTEN_FILE_NAME = 'a-different-file-name';
 
-    public $apiBaseUrl = '';
-
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $helper = Shopware();
-
-        $hostname = $helper->Shop()->getHost();
-        if (empty($hostname)) {
-            static::markTestSkipped(
-                'Hostname is not available.'
-            );
-        }
-
-        $this->apiBaseUrl = 'http://' . $hostname . $helper->Shop()->getBasePath() . '/api';
-
-        Shopware()->Db()->query('UPDATE s_core_auth SET apiKey = ? WHERE username LIKE "demo"', [sha1('demo')]);
-    }
-
-    /**
-     * @throws Zend_Http_Client_Adapter_Exception
-     *
-     * @return Zend_Http_Client
-     */
-    public function getHttpClient()
-    {
-        $username = 'demo';
-        $password = sha1('demo');
-
-        $adapter = new Zend_Http_Client_Adapter_Curl();
-        $adapter->setConfig([
-            'curloptions' => [
-                CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
-                CURLOPT_USERPWD => "$username:$password",
-            ],
-        ]);
-
-        $client = new Zend_Http_Client();
-        $client->setAdapter($adapter);
-
-        return $client;
-    }
-
     public function testRequestWithoutAuthenticationShouldReturnError()
     {
-        $client = new Zend_Http_Client($this->apiBaseUrl . '/media/');
-        $response = $client->request('GET');
+        $response = $this->getHttpClient(false)
+            ->setUri($this->apiBaseUrl . '/media/')
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(null, $response->getHeader('Set-Cookie'));
@@ -234,6 +188,7 @@ class MediaTest extends TestCase
 
         $data = $result['data'];
         static::assertIsArray($data);
+        static::assertArrayHasKey('attribute', $data);
     }
 
     /**
@@ -402,7 +357,7 @@ class MediaTest extends TestCase
     public function testMediaUploadTraversal()
     {
         $file = '../../image.jpg';
-        $media = new \Shopware\Components\Api\Resource\Media();
+        $media = new Media();
 
         return static::assertEquals('image.jpg', $media->getUniqueFileName('/tmp', $file));
     }

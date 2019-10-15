@@ -28,43 +28,69 @@ use PHPUnit\Framework\TestCase;
 use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class GenerateArticleImagesTest extends TestCase
+class CusterGroupTest extends TestCase
 {
     use ApiSetupTrait;
+    public const API_PATH = '/customerGroups/';
 
-    public function testBatchDeleteShouldFail()
+    public function testRequestWithoutAuthenticationShouldReturnError()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/generateArticleImages');
-
-        $response = $client->request('DELETE');
+        $response = $this->getHttpClient(false)
+            ->setUri($this->apiBaseUrl . self::API_PATH)
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(null, $response->getHeader('Set-Cookie'));
-        static::assertEquals(405, $response->getStatus());
+        static::assertEquals(401, $response->getStatus());
 
         $result = $response->getBody();
+
         $result = Zend_Json::decode($result);
 
         static::assertArrayHasKey('success', $result);
         static::assertFalse($result['success']);
-        static::assertEquals('This resource has no support for batch operations.', $result['message']);
+
+        static::assertArrayHasKey('message', $result);
     }
 
-    public function testBatchPutShouldFail()
+    public function testGetCustomerGroupWithInvalidIdShouldReturnMessage()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/generateArticleImages');
-
-        $response = $client->request('PUT');
+        $id = 999999;
+        $response = $this->getHttpClient()
+            ->setUri($this->apiBaseUrl . self::API_PATH . $id)
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
-        static::assertEquals(null, $response->getHeader('Set-Cookie'));
-        static::assertEquals(405, $response->getStatus());
+        static::assertEquals(404, $response->getStatus());
 
         $result = $response->getBody();
+
         $result = Zend_Json::decode($result);
 
         static::assertArrayHasKey('success', $result);
         static::assertFalse($result['success']);
-        static::assertEquals('This resource has no support for batch operations.', $result['message']);
+
+        static::assertArrayHasKey('message', $result);
+    }
+
+    public function testGetCustomerGroupEK()
+    {
+        $id = 1;
+        $response = $this->getHttpClient()
+            ->setUri($this->apiBaseUrl . self::API_PATH . $id)
+            ->request('GET');
+
+        static::assertEquals('application/json', $response->getHeader('Content-Type'));
+        static::assertEquals(200, $response->getStatus());
+
+        $result = $response->getBody();
+
+        $result = Zend_Json::decode($result);
+
+        static::assertArrayHasKey('success', $result);
+        static::assertTrue($result['success']);
+
+        static::assertArrayHasKey('data', $result);
+        static::assertArrayHasKey('attribute', $result['data']);
     }
 }

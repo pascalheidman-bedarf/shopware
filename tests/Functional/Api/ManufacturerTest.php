@@ -22,19 +22,23 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
-use PHPUnit\Framework\TestCase;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class ManufacturerTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_Manufacturers
+ */
+class ManufacturerTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
+    public function getApiResource(): string
+    {
+        return 'manufacturers';
+    }
 
     public function testGetManufacturersShouldBeSuccessful()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/manufacturers');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
         $result = $client->request('GET');
 
         static::assertEquals('application/json', $result->getHeader('Content-Type'));
@@ -58,7 +62,7 @@ class ManufacturerTest extends TestCase
 
     public function testPostManufacturersWithoutNameShouldFailWithMessage()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/manufacturers');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $requestData = [
             'description' => 'flipflops',
@@ -86,7 +90,7 @@ class ManufacturerTest extends TestCase
 
     public function testPostManufacturersShouldBeSuccessful()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/manufacturers');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $requestData = [
             'name' => 'Foo Bar',

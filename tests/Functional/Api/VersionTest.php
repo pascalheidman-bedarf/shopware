@@ -22,23 +22,27 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
-use PHPUnit\Framework\TestCase;
 use Shopware\Kernel;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class VersionTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_Version
+ */
+class VersionTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
+    public function getApiResource(): string
+    {
+        return 'version';
+    }
 
     public function testGetVersionShouldBeSuccessful()
     {
         $kernel = new Kernel('testing', true);
         $release = $kernel->getRelease();
 
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/version');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
         $result = $client->request('GET');
 
         static::assertEquals('application/json', $result->getHeader('Content-Type'));

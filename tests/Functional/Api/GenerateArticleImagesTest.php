@@ -22,19 +22,23 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
-use PHPUnit\Framework\TestCase;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class GenerateArticleImagesTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_GenerateArticleImages
+ */
+class GenerateArticleImagesTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
+    public function getApiResource(): string
+    {
+        return 'generateArticleImages';
+    }
 
     public function testBatchDeleteShouldFail()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/generateArticleImages');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $response = $client->request('DELETE');
 
@@ -52,7 +56,7 @@ class GenerateArticleImagesTest extends TestCase
 
     public function testBatchPutShouldFail()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/generateArticleImages');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $response = $client->request('PUT');
 

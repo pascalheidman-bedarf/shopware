@@ -22,36 +22,37 @@
  * our trademarks remain entirely with us.
  */
 
-return array_replace_recursive($this->loadConfig($this->AppPath() . 'Configs/Default.php'), [
-     'front' => [
-        'throwExceptions' => true,
-        'disableOutputBuffering' => false,
-        'showException' => true,
-    ],
-    'errorhandler' => [
-        'throwOnRecoverableError' => true,
-    ],
-    'session' => [
-        'unitTestEnabled' => true,
-        'name' => 'SHOPWARESID',
-        'cookie_lifetime' => 0,
-        'use_trans_sid' => false,
-        'gc_probability' => 1,
-        'gc_divisor' => 100,
-        'save_handler' => 'db',
-    ],
-    'mail' => [
-        'type' => 'file',
-        'path' => $this->getCacheDir(),
-    ],
-    'phpsettings' => [
-        'error_reporting' => E_ALL,
-        'display_errors' => 1,
-        'date.timezone' => 'Europe/Berlin',
-        'max_execution_time' => 0,
-    ],
-    'csrfprotection' => [
-        'frontend' => false,
-        'backend' => false,
-    ],
-]);
+namespace Shopware\Tests\Functional\Api;
+
+use Zend_Json;
+
+/**
+ * @covers \Shopware_Controllers_Api_Orders
+ */
+class OrderTest extends AbstractApiTest
+{
+    public function getApiResource(): string
+    {
+        return 'orders';
+    }
+
+    public function testGetCustomerGroupWithInvalidIdShouldReturnMessage()
+    {
+        $id = 99999999;
+        $response = $this->getHttpClient()
+            ->setUri($this->getApiUrl() . $id)
+            ->request('GET');
+
+        static::assertEquals('application/json', $response->getHeader('Content-Type'));
+        static::assertEquals(404, $response->getStatus());
+
+        $result = $response->getBody();
+
+        $result = Zend_Json::decode($result);
+
+        static::assertArrayHasKey('success', $result);
+        static::assertFalse($result['success']);
+
+        static::assertArrayHasKey('message', $result);
+    }
+}

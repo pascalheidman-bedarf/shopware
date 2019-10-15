@@ -22,42 +22,25 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
-use PHPUnit\Framework\TestCase;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class CusterGroupTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_CustomerGroups
+ */
+class CusterGroupTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
-    public const API_PATH = '/customerGroups/';
-
-    public function testRequestWithoutAuthenticationShouldReturnError()
+    public function getApiResource(): string
     {
-        $response = $this->getHttpClient(false)
-            ->setUri($this->apiBaseUrl . self::API_PATH)
-            ->request('GET');
-
-        static::assertEquals('application/json', $response->getHeader('Content-Type'));
-        static::assertEquals(null, $response->getHeader('Set-Cookie'));
-        static::assertEquals(401, $response->getStatus());
-
-        $result = $response->getBody();
-
-        $result = Zend_Json::decode($result);
-
-        static::assertArrayHasKey('success', $result);
-        static::assertFalse($result['success']);
-
-        static::assertArrayHasKey('message', $result);
+        return 'customerGroups';
     }
 
     public function testGetCustomerGroupWithInvalidIdShouldReturnMessage()
     {
         $id = 999999;
         $response = $this->getHttpClient()
-            ->setUri($this->apiBaseUrl . self::API_PATH . $id)
+            ->setUri($this->getApiUrl() . $id)
             ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
@@ -77,7 +60,7 @@ class CusterGroupTest extends TestCase
     {
         $id = 1;
         $response = $this->getHttpClient()
-            ->setUri($this->apiBaseUrl . self::API_PATH . $id)
+            ->setUri($this->getApiUrl() . $id)
             ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));

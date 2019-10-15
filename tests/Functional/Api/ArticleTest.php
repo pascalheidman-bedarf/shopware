@@ -22,44 +22,28 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
-use PHPUnit\Framework\TestCase;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Http_Client_Exception;
 use Zend_Json;
 use Zend_Json_Exception;
 
-class ArticleTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_Articles
+ */
+class ArticleTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
-
-    public function testRequestWithoutAuthenticationShouldReturnError()
+    public function getApiResource(): string
     {
-        $response = $this->getHttpClient(false)
-            ->setUri($this->apiBaseUrl . '/articles/')
-            ->request('GET');
-
-        static::assertEquals('application/json', $response->getHeader('Content-Type'));
-        static::assertEquals(null, $response->getHeader('Set-Cookie'));
-        static::assertEquals(401, $response->getStatus());
-
-        $result = $response->getBody();
-
-        $result = Zend_Json::decode($result);
-
-        static::assertArrayHasKey('success', $result);
-        static::assertFalse($result['success']);
-
-        static::assertArrayHasKey('message', $result);
+        return 'articles';
     }
 
     public function testGetArticlesWithInvalidIdShouldReturnMessage()
     {
         $id = 99999999;
         $response = $this->getHttpClient()
-                         ->setUri($this->apiBaseUrl . '/articles/' . $id)
-                         ->request('GET');
+            ->setUri($this->apiBaseUrl . '/articles/' . $id)
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(null, $response->getHeader('Set-Cookie'));
@@ -326,8 +310,8 @@ class ArticleTest extends TestCase
     public function testGetArticlesWithIdShouldBeSuccessful($id)
     {
         $response = $this->getHttpClient()
-                         ->setUri($this->apiBaseUrl . '/articles/' . $id)
-                         ->request('GET');
+            ->setUri($this->apiBaseUrl . '/articles/' . $id)
+            ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
         static::assertEquals(null, $response->getHeader('Set-Cookie'));
@@ -437,8 +421,8 @@ class ArticleTest extends TestCase
         static::assertArrayHasKey('data', $result);
 
         $response = $this->getHttpClient()
-                ->setUri($this->apiBaseUrl . '/articles/' . $id)
-                ->request('GET');
+            ->setUri($this->apiBaseUrl . '/articles/' . $id)
+            ->request('GET');
 
         $result = $response->getBody();
         $result = Zend_Json::decode($result);
@@ -613,8 +597,8 @@ class ArticleTest extends TestCase
      *
      * @param int $id
      *
-     * @throws Zend_Http_Client_Exception
      * @throws Zend_Json_Exception
+     * @throws Zend_Http_Client_Exception
      *
      * @return
      */
@@ -707,83 +691,83 @@ class ArticleTest extends TestCase
     public function getSimpleArticleData()
     {
         return [
-              'name' => 'Simple test article',
-              'description' => 'Test description',
-              'descriptionLong' => 'Test descriptionLong',
-              'active' => true,
-              'pseudoSales' => 999,
-              'highlight' => true,
-              'keywords' => 'test, testarticle',
+            'name' => 'Simple test article',
+            'description' => 'Test description',
+            'descriptionLong' => 'Test descriptionLong',
+            'active' => true,
+            'pseudoSales' => 999,
+            'highlight' => true,
+            'keywords' => 'test, testarticle',
 
-              'filterGroupId' => 1,
+            'filterGroupId' => 1,
 
-              'propertyValues' => [
-                  [
-                      'value' => 'grün',
-                      'option' => [
-                          'name' => 'Farbe',
-                      ],
-                  ],
-                  [
-                      'value' => 'testWert',
-                      'option' => [
-                          'name' => 'neueOption' . uniqid(mt_rand(), true),
-                      ],
-                  ],
-              ],
+            'propertyValues' => [
+                [
+                    'value' => 'grün',
+                    'option' => [
+                        'name' => 'Farbe',
+                    ],
+                ],
+                [
+                    'value' => 'testWert',
+                    'option' => [
+                        'name' => 'neueOption' . uniqid(mt_rand(), true),
+                    ],
+                ],
+            ],
 
-              'mainDetail' => [
-                  'number' => 'swTEST' . uniqid(mt_rand(), true),
-                  'inStock' => 15,
-                  'unitId' => 1,
+            'mainDetail' => [
+                'number' => 'swTEST' . uniqid(mt_rand(), true),
+                'inStock' => 15,
+                'unitId' => 1,
 
-                  'attribute' => [
-                      'attr1' => 'Freitext1',
-                      'attr2' => 'Freitext2',
-                  ],
+                'attribute' => [
+                    'attr1' => 'Freitext1',
+                    'attr2' => 'Freitext2',
+                ],
 
-                  'minPurchase' => 5,
-                  'purchaseSteps' => 2,
+                'minPurchase' => 5,
+                'purchaseSteps' => 2,
 
-                  'prices' => [
-                      [
-                          'customerGroupKey' => 'EK',
-                          'from' => 1,
-                          'to' => 20,
-                          'price' => 500,
-                      ],
-                      [
-                          'customerGroupKey' => 'EK',
-                          'from' => 21,
-                          'to' => '-',
-                          'price' => 400,
-                      ],
-                  ],
-              ],
+                'prices' => [
+                    [
+                        'customerGroupKey' => 'EK',
+                        'from' => 1,
+                        'to' => 20,
+                        'price' => 500,
+                    ],
+                    [
+                        'customerGroupKey' => 'EK',
+                        'from' => 21,
+                        'to' => '-',
+                        'price' => 400,
+                    ],
+                ],
+            ],
 
-              'taxId' => 1,
-              'supplierId' => 2,
+            'taxId' => 1,
+            'supplierId' => 2,
 
-              'similar' => [
-                  ['id' => 5],
-                  ['id' => 6],
-              ],
+            'similar' => [
+                ['id' => 5],
+                ['id' => 6],
+            ],
 
-              'categories' => [
-                  ['id' => 15],
-                  ['id' => 10],
-              ],
+            'categories' => [
+                ['id' => 15],
+                ['id' => 10],
+            ],
 
-              'related' => [
-                  ['id' => 3, 'cross' => true],
-                  ['id' => 4],
-              ],
+            'related' => [
+                ['id' => 3, 'cross' => true],
+                ['id' => 4],
+            ],
 
-              'links' => [
-                  ['name' => 'foobar', 'link' => 'http://example.org'],
-                  ['name' => 'Video', 'link' => 'http://example.org'],
-              ],
-          ];
+            'links' => [
+                ['name' => 'foobar', 'link' => 'http://example.org'],
+                ['name' => 'Video', 'link' => 'http://example.org'],
+            ],
+        ];
     }
 
     public function testBatchModeShouldBeSuccessful()

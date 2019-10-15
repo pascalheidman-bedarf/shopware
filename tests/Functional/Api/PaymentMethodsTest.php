@@ -22,22 +22,24 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
-use PHPUnit\Framework\TestCase;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class PaymentMethodsTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_PaymentMethods
+ */
+class PaymentMethodsTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
-
-    const API_PATH = '/PaymentMethods/';
+    public function getApiResource(): string
+    {
+        return 'PaymentMethods';
+    }
 
     public function testRequestWithoutAuthenticationShouldReturnError()
     {
         $response = $this->getHttpClient(false)
-            ->setUri($this->apiBaseUrl . self::API_PATH)
+            ->setUri($this->getApiUrl())
             ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
@@ -58,7 +60,7 @@ class PaymentMethodsTest extends TestCase
     {
         $id = 99999999;
         $response = $this->getHttpClient()
-            ->setUri($this->apiBaseUrl . self::API_PATH . $id)
+            ->setUri($this->getApiUrl() . $id)
             ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
@@ -77,7 +79,7 @@ class PaymentMethodsTest extends TestCase
 
     public function testGetPaymentShouldBeSuccessful()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . self::API_PATH);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
         $result = $client->request('GET');
 
         static::assertEquals('application/json', $result->getHeader('Content-Type'));
@@ -101,7 +103,7 @@ class PaymentMethodsTest extends TestCase
 
     public function testPostPaymentShouldBeSuccessful()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . self::API_PATH);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $requestData = [
             'name' => 'debit2',
@@ -145,7 +147,7 @@ class PaymentMethodsTest extends TestCase
      */
     public function testGetPaymentWithIdShouldBeSuccessful($identifier)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . self::API_PATH . $identifier);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $identifier);
         $result = $client->request('GET');
 
         static::assertEquals('application/json', $result->getHeader('Content-Type'));
@@ -171,7 +173,7 @@ class PaymentMethodsTest extends TestCase
      */
     public function testDeletePaymentWithIdShouldBeSuccessful($id)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . self::API_PATH . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $response = $client->request('DELETE');
 
@@ -189,7 +191,7 @@ class PaymentMethodsTest extends TestCase
     public function testDeletePaymentWithInvalidIdShouldFailWithMessage()
     {
         $id = 9999999;
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . self::API_PATH . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $response = $client->request('DELETE');
 

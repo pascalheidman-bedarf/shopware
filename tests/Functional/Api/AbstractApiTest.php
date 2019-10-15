@@ -22,17 +22,27 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api\Traits;
+namespace Shopware\Tests\Functional\Api;
 
+use PHPUnit\Framework\TestCase;
 use Zend_Http_Client;
 use Zend_Http_Client_Adapter_Curl;
 use Zend_Http_Client_Adapter_Exception;
+use Zend_Http_Client_Exception;
+use Zend_Json;
 
-trait ApiSetupTrait
+abstract class AbstractApiTest extends TestCase
 {
     public $apiBaseUrl = '';
 
     protected $oldPasswort;
+
+    abstract public function getApiResource(): string;
+
+    final public function getApiUrl(): string
+    {
+        return $this->apiBaseUrl . '/' . $this->getApiResource() . '/';
+    }
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -42,18 +52,18 @@ trait ApiSetupTrait
      */
     public function prepareApiUserBefore(): void
     {
-        $helper = Shopware();
+        $shop = Shopware()->Shop();
 
-        $hostname = $helper->Shop()->getHost();
+        $hostname = $shop->getHost();
         if (empty($hostname)) {
             static::markTestSkipped(
                 'Hostname is not available.'
             );
         }
 
-        $this->apiBaseUrl = 'http://' . $hostname . $helper->Shop()->getBasePath() . '/api';
+        $this->apiBaseUrl = ($shop->getSecure() ? 'https://' : 'http://') . $hostname . $shop->getBasePath() . '/api';
 
-        $db = $helper->Db();
+        $db = Shopware()->Db();
         $this->oldPasswort = $db->fetchOne('SELECT apiKey FROM s_core_auth WHERE username LIKE "demo"');
         $db->query('UPDATE s_core_auth SET apiKey = ? WHERE username LIKE "demo"', [sha1('demo')]);
     }
@@ -69,8 +79,8 @@ trait ApiSetupTrait
     }
 
     /**
+     * @throws Zend_Http_Client_Exception
      * @throws Zend_Http_Client_Adapter_Exception
-     * @throws \Zend_Http_Client_Exception
      *
      * @return Zend_Http_Client
      */
@@ -80,18 +90,45 @@ trait ApiSetupTrait
         $password = sha1('demo');
 
         $adapter = new Zend_Http_Client_Adapter_Curl();
+
+        // travis CI can't handle localhost via ipv6...
+        $curlOptions = [
+            CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+        ];
+
         if ($auth) {
-            $adapter->setConfig([
-                'curloptions' => [
-                    CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
-                    CURLOPT_USERPWD => "$username:$password",
-                ],
-            ]);
+            $curlOptions += [
+                CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
+                CURLOPT_USERPWD => "$username:$password",
+            ];
         }
+        $adapter->setConfig([
+            'curloptions' => $curlOptions,
+        ]);
 
         $client = new Zend_Http_Client();
         $client->setAdapter($adapter);
 
         return $client;
+    }
+
+    public function testRequestWithoutAuthenticationShouldReturnError()
+    {
+        $response = $this->getHttpClient(false)
+            ->setUri($this->apiBaseUrl . '/' . $this->getApiResource() . '/')
+            ->request('GET');
+
+        static::assertEquals('application/json', $response->getHeader('Content-Type'));
+        static::assertEquals(null, $response->getHeader('Set-Cookie'));
+        static::assertEquals(401, $response->getStatus());
+
+        $result = $response->getBody();
+
+        $result = Zend_Json::decode($result);
+
+        static::assertArrayHasKey('success', $result);
+        static::assertFalse($result['success']);
+
+        static::assertArrayHasKey('message', $result);
     }
 }

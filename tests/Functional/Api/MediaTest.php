@@ -22,45 +22,29 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
-use PHPUnit\Framework\TestCase;
 use Shopware\Components\Api\Resource\Media;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class MediaTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_Media
+ */
+class MediaTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
-
     const UPLOAD_FILE_NAME = 'test-bild';
     const UPLOAD_OVERWRITTEN_FILE_NAME = 'a-different-file-name';
 
-    public function testRequestWithoutAuthenticationShouldReturnError()
+    public function getApiResource(): string
     {
-        $response = $this->getHttpClient(false)
-            ->setUri($this->apiBaseUrl . '/media/')
-            ->request('GET');
-
-        static::assertEquals('application/json', $response->getHeader('Content-Type'));
-        static::assertEquals(null, $response->getHeader('Set-Cookie'));
-        static::assertEquals(401, $response->getStatus());
-
-        $result = $response->getBody();
-
-        $result = Zend_Json::decode($result);
-
-        static::assertArrayHasKey('success', $result);
-        static::assertFalse($result['success']);
-
-        static::assertArrayHasKey('message', $result);
+        return 'media';
     }
 
     public function testGetMediaWithInvalidIdShouldReturnMessage()
     {
         $id = 99999999;
         $response = $this->getHttpClient()
-            ->setUri($this->apiBaseUrl . '/media/' . $id)
+            ->setUri($this->getApiUrl() . $id)
             ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
@@ -171,7 +155,7 @@ class MediaTest extends TestCase
      */
     public function testGetMediaWithIdShouldBeSuccessful($identifier)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/media/' . $identifier);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $identifier);
         $result = $client->request('GET');
 
         static::assertEquals('application/json', $result->getHeader('Content-Type'));
@@ -196,7 +180,7 @@ class MediaTest extends TestCase
      */
     public function testDeleteMediaWithIdShouldBeSuccessful($id)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/media/' . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $response = $client->request('DELETE');
 
@@ -251,7 +235,7 @@ class MediaTest extends TestCase
      */
     public function testGetMediaWithUploadedFileByIdShouldBeSuccessful($identifier)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/media/' . $identifier);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $identifier);
         $result = $client->request('GET');
 
         static::assertEquals('application/json', $result->getHeader('Content-Type'));
@@ -313,7 +297,7 @@ class MediaTest extends TestCase
      */
     public function testGetMediaWithUploadedFileAndOverwrittenNameByIdShouldBeSuccessful($identifier)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/media/' . $identifier);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $identifier);
         $result = $client->request('GET');
 
         static::assertEquals('application/json', $result->getHeader('Content-Type'));
@@ -337,7 +321,7 @@ class MediaTest extends TestCase
     public function testDeleteMediaWithInvalidIdShouldFailWithMessage()
     {
         $id = 9999999;
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/media/' . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $response = $client->request('DELETE');
 

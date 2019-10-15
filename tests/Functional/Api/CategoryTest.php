@@ -22,34 +22,18 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
-use PHPUnit\Framework\TestCase;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class CategoryTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_Categories
+ */
+class CategoryTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
-
-    public function testRequestWithoutAuthenticationShouldReturnError()
+    public function getApiResource(): string
     {
-        $response = $this->getHttpClient(false)
-            ->setUri($this->apiBaseUrl . '/categories')
-            ->request('GET');
-
-        static::assertEquals('application/json', $response->getHeader('Content-Type'));
-        static::assertEquals(null, $response->getHeader('Set-Cookie'));
-        static::assertEquals(401, $response->getStatus());
-
-        $result = $response->getBody();
-
-        $result = Zend_Json::decode($result);
-
-        static::assertArrayHasKey('success', $result);
-        static::assertFalse($result['success']);
-
-        static::assertArrayHasKey('message', $result);
+        return 'categories';
     }
 
     public function testGetCategoriesWithInvalidIdShouldReturnMessage()

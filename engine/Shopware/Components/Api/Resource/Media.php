@@ -196,11 +196,14 @@ class Media extends Resource
 
         if (!empty($params['attribute'])) {
             $attribute = $media->getAttribute();
+            if (!$attribute) {
+                $attribute = new MediaAttribute();
+            }
             $attribute->fromArray($params['attribute']);
 
             $media->setAttribute($attribute);
             $this->getManager()->persist($attribute);
-            $this->getManager()->flush();
+            $this->flush();
         }
 
         return $media;

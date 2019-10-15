@@ -15,7 +15,6 @@
         <testsuite name="Shopware_AllTests">
             <directory>./Unit</directory>
             <directory>./Functional</directory>
-            <directory>./Api</directory>
         </testsuite>
     </testsuites>
 

@@ -22,22 +22,26 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Tests\Api;
+namespace Shopware\Tests\Functional\Api;
 
 use DateTime;
-use PHPUnit\Framework\TestCase;
 use Shopware\Models\Customer\Customer;
-use Shopware\Tests\Api\Traits\ApiSetupTrait;
 use Zend_Json;
 
-class CustomerTest extends TestCase
+/**
+ * @covers \Shopware_Controllers_Api_Customers
+ */
+class CustomerTest extends AbstractApiTest
 {
-    use ApiSetupTrait;
+    public function getApiResource(): string
+    {
+        return 'customers';
+    }
 
     public function testRequestWithoutAuthenticationShouldReturnError()
     {
         $response = $this->getHttpClient(false)
-            ->setUri($this->apiBaseUrl . '/customers/')
+            ->setUri($this->getApiUrl())
             ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
@@ -57,7 +61,7 @@ class CustomerTest extends TestCase
     {
         $id = 99999999;
         $response = $this->getHttpClient()
-            ->setUri($this->apiBaseUrl . '/customers/' . $id)
+            ->setUri($this->getApiUrl() . $id)
             ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
@@ -75,7 +79,7 @@ class CustomerTest extends TestCase
 
     public function testPostCustomersShouldBeSuccessful()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $date = new DateTime();
         $date->modify('-10 days');
@@ -157,7 +161,7 @@ class CustomerTest extends TestCase
      */
     public function testPostCustomersWithDebitShouldCreatePaymentData()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $date = new DateTime();
         $date->modify('-10 days');
@@ -247,7 +251,7 @@ class CustomerTest extends TestCase
      */
     public function testPostCustomersWithDebitPaymentDataShouldCreateDebitData()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $date = new DateTime();
         $date->modify('-10 days');
@@ -337,7 +341,7 @@ class CustomerTest extends TestCase
 
     public function testPostCustomersWithInvalidDataShouldReturnError()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $requestData = [
             'active' => true,
@@ -369,7 +373,7 @@ class CustomerTest extends TestCase
     public function testGetCustomersWithIdShouldBeSuccessful($id)
     {
         $response = $this->getHttpClient()
-            ->setUri($this->apiBaseUrl . '/customers/' . $id)
+            ->setUri($this->getApiUrl() . $id)
             ->request('GET');
 
         static::assertEquals('application/json', $response->getHeader('Content-Type'));
@@ -401,7 +405,7 @@ class CustomerTest extends TestCase
 
     public function testPutBatchCustomersShouldFail()
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/');
+        $client = $this->getHttpClient()->setUri($this->getApiUrl());
 
         $requestData = [
             'active' => true,
@@ -428,7 +432,7 @@ class CustomerTest extends TestCase
      */
     public function testPutCustomersWithInvalidDataShouldReturnError($id)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/' . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $requestData = [
             'active' => true,
@@ -456,7 +460,7 @@ class CustomerTest extends TestCase
      */
     public function testPutCustomersShouldBeSuccessful($id)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/' . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $customer = Shopware()->Models()->getRepository(Customer::class)->find($id);
 
@@ -492,7 +496,7 @@ class CustomerTest extends TestCase
      */
     public function testDeleteCustomersShouldBeSuccessful($id)
     {
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/' . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $response = $client->request('DELETE');
 
@@ -511,7 +515,7 @@ class CustomerTest extends TestCase
     public function testDeleteCustomersWithInvalidIdShouldReturnMessage()
     {
         $id = 99999999;
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/' . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $response = $client->request('DELETE');
 
@@ -530,7 +534,7 @@ class CustomerTest extends TestCase
     public function testPutCustomersWithInvalidIdShouldReturnMessage()
     {
         $id = 99999999;
-        $client = $this->getHttpClient()->setUri($this->apiBaseUrl . '/customers/' . $id);
+        $client = $this->getHttpClient()->setUri($this->getApiUrl() . $id);
 
         $requestData = [
             'active' => true,
